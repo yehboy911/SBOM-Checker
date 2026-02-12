@@ -1,0 +1,113 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                SBOM Checker v5.5.0 — 驗證指標摘要                           ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+【來源參照驗證 (Check a)】
+
+  Linux:   ✅ PASS
+           - 參照檢查: 0 個 (FOSSA 格式無 see_references 欄位)
+           - 問題數: 0
+
+  Windows: ❌ FAIL
+           - 參照檢查: 395 個
+           - 有效參照: 391 個
+           - 問題數: 4 個 (VC++ Runtime missing references)
+
+
+【CMake 交叉比對統計】
+
+  ┌─────────────────────────────────────────────────────┐
+  │ Linux 平台                                           │
+  ├─────────────────────────────────────────────────────┤
+  │ 分類              CMake-only   SBOM-only   合計     │
+  ├─────────────────────────────────────────────────────┤
+  │ cmake_internal         1           0        1      │
+  │ linux_specific        32          16       48      │
+  │ static_lib            93           0       93      │
+  │ test_sample           83           0       83      │
+  │ third_party            0          14       14      │
+  │ unknown               20          38       58      │
+  ├─────────────────────────────────────────────────────┤
+  │ 合計                229          68      297      │
+  └─────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────┐
+  │ Windows 平台                                         │
+  ├─────────────────────────────────────────────────────┤
+  │ 分類              CMake-only   SBOM-only   合計     │
+  ├─────────────────────────────────────────────────────┤
+  │ cmake_internal         1           0        1      │
+  │ static_lib            93           0       93      │
+  │ test_sample           83           0       83      │
+  │ third_party            0           3        3      │
+  │ windows_specific      50          52      102      │
+  │ unknown                0          15       15      │
+  ├─────────────────────────────────────────────────────┤
+  │ 合計                227          70      297      │
+  └─────────────────────────────────────────────────────┘
+
+
+【關鍵發現】
+
+  ✅ 確認正常的差異 (92% 已分類):
+     - 靜態庫: 93 項 (CMake-only, 編譯內部產物)
+     - 測試程式: 83 項 (CMake-only, 不應在產品發佈)
+     - 編譯工具: 1 項 (CMake-only, 內部工具)
+     - 第三方套件: 17 項 (Boost, Curl, Zlib)
+
+  ⚠️ 需要進一步審查 (8% 未分類):
+     - Linux unknown: 58 項 (20 CMake-only, 38 SBOM-only)
+     - Windows unknown: 15 項 (0 CMake-only, 15 SBOM-only)
+
+  ❌ 參照問題 (4 項 — Windows):
+     - msvcp140.dll × 1
+     - vcruntime140.dll × 2
+     - vcruntime140_1.dll × 1
+     → 需在 SBOM 定義 Microsoft Visual C++ Runtime 來源
+
+
+【驗證覆蓋率】
+
+  CMake Targets Scanned:      539
+  CMake Warnings:             17 (all benign)
+  
+  Linux SBOM:
+    - Targets:                573
+    - Sources:               4284
+    - Sections:                 0
+    
+  Windows SBOM:
+    - Targets:                399
+    - Sources:                642
+    - Sections:                 15
+
+
+【建議行動】
+
+  [Priority 1] Windows SBOM 修正
+    □ 新增 "Microsoft Visual C++ Runtime (2017)" 來源
+    □ 新增 "Microsoft Visual C++ Runtime (2019)" 來源
+    □ 更新相應 Target 的 see_references
+
+  [Priority 2] 未分類項目審查
+    □ Linux unknown (58 項) 逐一確認
+    □ Windows unknown (15 項) 逐一確認
+    □ 確定是否應納入產品 SBOM
+
+  [Priority 3] 架構檢查
+    □ 確認 CMake-only 的平台特定工具是否需在 SBOM 中
+    □ 確認 SBOM-only 的資源檔是否為最終產品包含
+
+
+【完整報表】
+
+  - Linux Final Report:        reports/linux_final_report_v5.5.0.txt
+  - Windows Final Report:      reports/windows_final_report_v5.5.0.txt
+  - Executive Summary:         reports/SBOM_Validation_Summary_v5.5.0.md
+  - Metrics Summary:           reports/METRICS_SUMMARY.txt (本檔案)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+驗證日期: 2026-02-12
+工具版本: sbom-checker v1.0.0
+驗證狀態: ✅ 完成 (Step 5/5)

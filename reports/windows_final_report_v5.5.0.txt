@@ -1,0 +1,373 @@
+已解析: 399 個 Target, 642 個 Source, 15 個區段, 平台: windows
+CMake 掃描: 539 個 target
+CMake 警告: 17 個
+  - add_library 無明確類型，預設 SHARED: FortranLib (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/onecli/Build/tools/cmake_win/share/cmake-3.16/Modules/IntelVSImplicitPath/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: update_repository (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/onecli/Src/Update/repository/CMakeLists.txt)
+  - 含 CMake 變數，已跳過: ${custom_name}_hook (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/onecli/Src/LightWeight/a2/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: BmuFileManager (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/onecli/Src/Utility/BmuOneCLIEnv/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: rpp_redfish_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/rpp_redfish/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: logmgr_redfish_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/logmgr_redfish/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: smart_data_redfish_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/smart_data/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: system_guard_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/system_guard/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: secure_erase_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/secure_erase/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: service_data_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/service_data/CMakeLists.txt)
+  ... 還有 7 個警告
+
+====================================================================================================
+  SBOM Checker 驗證報表
+====================================================================================================
+
+[ 摘要 ]
+  平台:           windows
+  Target 項目數:  399
+  Source 項目數:  642
+  區段數:         15
+  略過 (IGNORE):  0
+  參照檢查數:     395
+  參照有效數:     391
+  參照問題數:     4
+  CMake 獨有:     227
+  SBOM 獨有:      70
+
+----------------------------------------------------------------------------------------------------
+[ Check (a) 來源參照驗證 ]
+----------------------------------------------------------------------------------------------------
+
+  Target 檔案                                遺失參照                                     區段
+  --------------------------------------   --------------------------------------   ------------------
+  msvcp140.dll                             Microsoft Visual C++ Runtime (2019)      lnvgy_utl_lxce_o..
+  vcruntime140_1.dll                       Microsoft Visual C++ Runtime (2019)      lnvgy_utl_lxce_o..
+  vcruntime140.dll                         Microsoft Visual C++ Runtime (2019)      lnvgy_utl_lxce_o..
+  vcruntime140.dll                         Microsoft Visual C++ Runtime (2017)      lnvgy_utl_lxce_o..
+
+----------------------------------------------------------------------------------------------------
+[ CMake 交叉比對 ]
+----------------------------------------------------------------------------------------------------
+
+[ CMake 交叉比對 — 分類統計 ]
+
+  分類                   CMake-only      SBOM-only       合計        
+  ------------------   -------------   -------------   --------  
+  cmake_internal       1               0               1         
+  static_lib           93              0               93        
+  test_sample          83              0               83        
+  third_party          0               3               3         
+  unknown              0               15              15        
+  windows_specific     50              52              102       
+  ------------------   -------------   -------------   --------  
+  合計                   227             70              297       
+
+[ CMake 交叉比對 — 詳細列表 ]
+
+  CMake 定義但不在 SBOM 中:
+    [cmake_internal]
+      - FortranLib.dll
+    [static_lib]
+      - BMCDataStore_static.lib
+      - BMCRedfishConfig_static.lib
+      - BiosRedfishConfig_static.lib
+      - CFCBMCRedfishConfig_static.lib
+      - ConfigCompatibleModule_static.lib
+      - DevUri.lib
+      - EnclosureConfigProc_static.lib
+      - ErrorCode.lib
+      - FoDErrCode_static.lib
+      - OneCliLog.lib
+      - OnecliCopyright.lib
+      - RedfishConfigAction_static.lib
+      - RedfishConfigAssistant_static.lib
+      - RedfishConfigCommon_static.lib
+      - RedfishConfig_static.lib
+      - RestCfgErrCode_static.lib
+      - SystemType.lib
+      - Timer.lib
+      - VerifyFortran.lib
+      - WriteRetcodeXML.lib
+      - XmRandom.lib
+      - agentless_supported_static.lib
+      - amdconfigipmi_static.lib
+      - arcconfopt_static.lib
+      - bmu_env_static.lib
+      - chassisEventLog_static.lib
+      - cimfunc_static.lib
+      - cimom_static.lib
+      - cimservice_static.lib
+      - cmm_manipulator_static.lib
+      - cmm_static.lib
+      - cmmcfg_static.lib
+      - cmmffdc_static.lib
+      - comparepackage_static.lib
+      - dcpmem_static.lib
+      - deviceCollector_static.lib
+      - diagnosticdata_static.lib
+      - discovery_static.lib
+      - driverinfo_static.lib
+      - emulex_static.lib
+      - engines.lib
+      - environment_static.lib
+      - eventlog_static.lib
+      - eventloglinux_static.lib
+      - ffdc_static.lib
+      - fod_static.lib
+      - hardwareinfo_static.lib
+      - hardwarescan_static.lib
+      - ibdisksw_static.lib
+      - iflashBroker_static.lib
+      - immviacimupdate_static.lib
+      - ipmiEventlog_static.lib
+      - ipmi_exception_static.lib
+      - kmsrestapi_static.lib
+      - lightpath_static.lib
+      - lsiopt_static.lib
+      - lxce_ut_main.lib
+      - marvell_static.lib
+      - mellanox_static.lib
+      - modmanager_static.lib
+      - modulepath.lib
+      - modulepath_mt.lib
+      - myfort.lib
+      - network_static.lib
+      - network_utils_static.lib
+      - operatingsystem_static.lib
+      - osinfo_static.lib
+      - osspecific_static.lib
+      - pciedevices_static.lib
+      - pciedevicesuni_static.lib
+      - pciinventory_static.lib
+      - qlogic_static.lib
+      - raidlink_static.lib
+      - registrykey_static.lib
+      - remotediags_static.lib
+      - repository_static.lib
+      - slpclient.lib
+      - smbioslib_static.lib
+      - smmapp.lib
+      - smmffdc_static.lib
+      - smmupdater_static.lib
+      - symbols.lib
+      - systeminfo_static.lib
+      - systemservice_static.lib
+      - untgz.lib
+      - update_common.lib
+      - usblancfg_static.lib
+      - usblansetting_static.lib
+      - versionhandler.lib
+      - vmesxiupdate_static.lib
+      - widgets_static.lib
+      - xFirmwareConfig_static.lib
+      - xslpmarker_static.lib
+    [test_sample]
+      - ModManager_api_test.exe
+      - arcconf_test.exe
+      - comparepackage_apitest.exe
+      - errorcode_managerTest.exe
+      - fod_apitest.exe
+      - globalconfig_api_test.exe
+      - ipmiEventlog_apitest.exe
+      - ipmiProperty_test.exe
+      - ipmi_client_test.exe
+      - lightpath_apitest.exe
+      - optionupdate_apitest.exe
+      - osspecificTest.exe
+      - pcidevice_test.exe
+      - progress_sample.exe
+      - querypackage_apitest.exe
+      - sample_UEFIHiddenLog.exe
+      - sample_acquire.exe
+      - sample_acquire_bmc_ports.exe
+      - sample_chassislog.exe
+      - sample_checktrustkey.exe
+      - sample_driverinfo.exe
+      - sample_emulex.exe
+      - sample_enviromentals.exe
+      - sample_exsi_inventory.exe
+      - sample_ffdc.exe
+      - sample_filetransfer.exe
+      - sample_getcert.exe
+      - sample_hardwareinventory.exe
+      - sample_immapp.exe
+      - sample_immtype.exe
+      - sample_immviacimupdate.exe
+      - sample_intelnic.exe
+      - sample_ipmi_lan.exe
+      - sample_kmsrestapi.exe
+      - sample_lsi.exe
+      - sample_mellanox.exe
+      - sample_network.exe
+      - sample_network_utils.exe
+      - sample_networksetting.exe
+      - sample_operatingsystem.exe
+      - sample_osinventory.exe
+      - sample_pciinventory.exe
+      - sample_power_management.exe
+      - sample_qlogic.exe
+      - sample_raidlink.exe
+      - sample_remotediags.exe
+      - sample_remotefileopt.exe
+      - sample_smbios.exe
+      - sample_softwareidentity.exe
+      - sample_ssd.exe
+      - sample_usblancfg.exe
+      - sample_vmesxiupdate.exe
+      - samples_uri.exe
+      - systeminfo_apitest.exe
+      - test_amdconfigipmi.exe
+      - test_broadcom.exe
+      - test_brocade.exe
+      - test_cimom.exe
+      - test_crypt.exe
+      - test_emulex.exe
+      - test_ffdc.exe
+      - test_fusionio.exe
+      - test_hardwareinventory.exe
+      - test_intelnic.exe
+      - test_ipmiEventlog.exe
+      - test_kmsrestapi.exe
+      - test_lightpath.exe
+      - test_logger.exe
+      - test_logger_mt.exe
+      - test_mellanox.exe
+      - test_network_utils.exe
+      - test_networksetting.exe
+      - test_osinventory.exe
+      - test_pciinventory.exe
+      - test_qlogic.exe
+      - test_qlogicnx2.exe
+      - test_stl_thread_safe.exe
+      - test_vmesxiupdate.exe
+      - test_xfwcimupdate.exe
+      - untgz_test.exe
+      - xFirmwareConfig_apitest.exe
+      - xFirmwareInventory_apitest.exe
+      - xfirmwareupdate_apitest.exe
+    [windows_specific]
+      - BmuFileManager.dll
+      - FortranCInterface.exe
+      - VerifyFortranC.exe
+      - asu.exe
+      - asum.dll
+      - asum.exe
+      - bmc_user_static.dll
+      - check_ipmi.exe
+      - cmm_ffdc.exe
+      - cmm_flashup.exe
+      - cmm_inventory.exe
+      - cmmcfg.dll
+      - cmos_static.dll
+      - discovery.dll
+      - dsa.exe
+      - eventloglinux.dll
+      - hdd_locate_static.dll
+      - hwscan.exe
+      - installedpackages.dll
+      - ipmi_client_runner.exe
+      - logmgr_redfish_static.dll
+      - logupload_static.dll
+      - modmanager.dll
+      - moduleupdater.exe
+      - network_utils.dll
+      - onecli_asu.dll
+      - onecli_dsa.dll
+      - onecli_template.dll
+      - onecli_update_template.dll
+      - onecli_uxspi.dll
+      - pciinfolinux.dll
+      - pmem.dll
+      - portable_installer.exe
+      - portable_packager.exe
+      - rpp_redfish_static.dll
+      - secure_erase_static.dll
+      - service_data_static.dll
+      - slpmarker.dll
+      - slpmarker.exe
+      - smart_data_redfish_static.dll
+      - support_list_static.dll
+      - switch_cimup.exe
+      - system_guard_static.dll
+      - update_repository.dll
+      - uxspi.exe
+      - xm_unzip.dll
+      - xm_zip.dll
+      - xmlogger.exe
+      - xmunzip.exe
+      - xmzip.exe
+
+  SBOM 列出但 CMake 未定義:
+    [third_party]
+      - libcurl.dll
+      - zlib1.dll
+      - zlib1_mt.dll
+    [unknown]
+      - adapters.properties
+      - banner_bg.png
+      - coe-30002-01_lenovo_license_agreement.pdf
+      - device.cat
+      - e.gif
+      - flashdrv.bin
+      - header_bg.png
+      - i.gif
+      - lenovo_logo.png
+      - lnvgy_utl_lxce_onecli01m-5.5.0_windows_indiv.zip
+      - pciio_driver.sys
+      - sizes.bin
+      - ssdcli.bin
+      - time_estimation
+      - w.gif
+    [windows_specific]
+      - BMAPI.dll
+      - DotNetWSManClient.dll
+      - HLAPI.dll
+      - IWSManClient.dll
+      - Intel.Wsman.Scripting.dll
+      - IntelVROCCli.exe
+      - SAS2IR_windows_x64.exe
+      - UpdateDriverAMD64.exe
+      - afaapi.dll
+      - amt_log.exe
+      - arcconf.exe
+      - check_amt_bmc.exe
+      - dqltrace.dll
+      - eventslog_convert.exe
+      - fdrvwl.exe
+      - getsmbios.exe
+      - hbaapi2_x64.dll
+      - ipmctl.exe
+      - ipmiutilnh.exe
+      - lddf.dll
+      - libcrypto-3-x64.dll
+      - libipmctl.dll
+      - libssh2.dll
+      - libssl-3-x64.dll
+      - lnvgy_utl_lxceb_onecli01m-5.5.0_windows_indiv.exe
+      - mnv_cli.exe
+      - msvcp140.dll
+      - mv_api.dll
+      - mvcli.exe
+      - pegclient.dll
+      - pegcliutils.dll
+      - pegcommon.dll
+      - peggeneral.dll
+      - pegslp.dll
+      - pegslp_client.dll
+      - qaucli.exe
+      - qlcoutil.dll
+      - qlsdm.dll
+      - rdmount.exe
+      - rdumount.exe
+      - rstcli64_5.exe
+      - snmp++.dll
+      - ssdcli.exe
+      - storarc.dll
+      - storcli.exe
+      - storcli2.exe
+      - storelib.dll
+      - storelib8.dll
+      - storelibir-3.dll
+      - storelibit.dll
+      - vcruntime140.dll
+      - vcruntime140_1.dll
+
+====================================================================================================
+  結果: 來源參照 FAIL | CMake 比對: FAIL
+====================================================================================================
+

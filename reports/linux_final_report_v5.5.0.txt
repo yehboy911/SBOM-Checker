@@ -1,0 +1,369 @@
+已解析: 573 個 Target, 4284 個 Source, 0 個區段, 平台: linux
+CMake 掃描: 539 個 target
+CMake 警告: 17 個
+  - add_library 無明確類型，預設 SHARED: FortranLib (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/onecli/Build/tools/cmake_win/share/cmake-3.16/Modules/IntelVSImplicitPath/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: update_repository (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/onecli/Src/Update/repository/CMakeLists.txt)
+  - 含 CMake 變數，已跳過: ${custom_name}_hook (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/onecli/Src/LightWeight/a2/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: BmuFileManager (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/onecli/Src/Utility/BmuOneCLIEnv/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: rpp_redfish_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/rpp_redfish/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: logmgr_redfish_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/logmgr_redfish/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: smart_data_redfish_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/smart_data/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: system_guard_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/system_guard/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: secure_erase_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/secure_erase/CMakeLists.txt)
+  - add_library 無明確類型，預設 SHARED: service_data_static (/Users/Yehboy/OSC/LXCE_5.5.0/OneCLI/modularization/src/module/misc/service_data/CMakeLists.txt)
+  ... 還有 7 個警告
+
+====================================================================================================
+  SBOM Checker 驗證報表
+====================================================================================================
+
+[ 摘要 ]
+  平台:           linux
+  Target 項目數:  573
+  Source 項目數:  4284
+  區段數:         0
+  略過 (IGNORE):  0
+  參照檢查數:     0
+  參照有效數:     0
+  參照問題數:     0
+  CMake 獨有:     229
+  SBOM 獨有:      68
+
+----------------------------------------------------------------------------------------------------
+[ Check (a) 來源參照驗證 ]
+----------------------------------------------------------------------------------------------------
+
+  所有來源參照均有效。
+
+----------------------------------------------------------------------------------------------------
+[ CMake 交叉比對 ]
+----------------------------------------------------------------------------------------------------
+
+[ CMake 交叉比對 — 分類統計 ]
+
+  分類                   CMake-only      SBOM-only       合計        
+  ------------------   -------------   -------------   --------  
+  cmake_internal       1               0               1         
+  linux_specific       32              16              48        
+  static_lib           93              0               93        
+  test_sample          83              0               83        
+  third_party          0               14              14        
+  unknown              20              38              58        
+  ------------------   -------------   -------------   --------  
+  合計                   229             68              297       
+
+[ CMake 交叉比對 — 詳細列表 ]
+
+  CMake 定義但不在 SBOM 中:
+    [cmake_internal]
+      - libFortranLib.so
+    [linux_specific]
+      - libBmuFileManager.so
+      - libasum.so
+      - libbmc_user_static.so
+      - libcmmcfg.so
+      - libcmos_static.so
+      - libeventlog.so
+      - libhdd_locate_static.so
+      - libinstalledappsandupdates.so
+      - libinstalledhotfixes.so
+      - liblogmgr_redfish_static.so
+      - liblogupload_static.so
+      - libmodmanager.so
+      - libnetwork_utils.so
+      - libonecli_asu.so
+      - libonecli_dsa.so
+      - libonecli_template.so
+      - libonecli_update_template.so
+      - libonecli_uxspi.so
+      - libpagingfile.so
+      - libpciinfo.so
+      - libpciio.so
+      - librpp_redfish_static.so
+      - libsecure_erase_static.so
+      - libservice_data_static.so
+      - libslpmarker.so
+      - libsmart_data_redfish_static.so
+      - libsupport_list_static.so
+      - libsystem_guard_static.so
+      - libsystemservice.so
+      - libupdate_repository.so
+      - libxm_unzip.so
+      - libxm_zip.so
+    [static_lib]
+      - libBMCDataStore_static.a
+      - libBMCRedfishConfig_static.a
+      - libBiosRedfishConfig_static.a
+      - libCFCBMCRedfishConfig_static.a
+      - libConfigCompatibleModule_static.a
+      - libDevUri.a
+      - libEnclosureConfigProc_static.a
+      - libErrorCode.a
+      - libFoDErrCode_static.a
+      - libOneCliLog.a
+      - libOnecliCopyright.a
+      - libRedfishConfigAction_static.a
+      - libRedfishConfigAssistant_static.a
+      - libRedfishConfigCommon_static.a
+      - libRedfishConfig_static.a
+      - libRestCfgErrCode_static.a
+      - libSystemType.a
+      - libTimer.a
+      - libVerifyFortran.a
+      - libWriteRetcodeXML.a
+      - libXmRandom.a
+      - libagentless_supported_static.a
+      - libamdconfigipmi_static.a
+      - libarcconfopt_static.a
+      - libbmu_env_static.a
+      - libchassisEventLog_static.a
+      - libcimfunc_static.a
+      - libcimom_static.a
+      - libcimservice_static.a
+      - libcmm_manipulator_static.a
+      - libcmm_static.a
+      - libcmmcfg_static.a
+      - libcmmffdc_static.a
+      - libcomparepackage_static.a
+      - libdcpmem_static.a
+      - libdeviceCollector_static.a
+      - libdiagnosticdata_static.a
+      - libdiscovery_static.a
+      - libdriverinfo_static.a
+      - libemulex_static.a
+      - libengines.a
+      - libenvironment_static.a
+      - libeventlog_static.a
+      - libeventloglinux_static.a
+      - libffdc_static.a
+      - libfod_static.a
+      - libhardwareinfo_static.a
+      - libhardwarescan_static.a
+      - libibdisksw_static.a
+      - libiflashBroker_static.a
+      - libimmviacimupdate_static.a
+      - libipmiEventlog_static.a
+      - libipmi_exception_static.a
+      - libkmsrestapi_static.a
+      - liblightpath_static.a
+      - liblsiopt_static.a
+      - liblxce_ut_main.a
+      - libmarvell_static.a
+      - libmellanox_static.a
+      - libmodmanager_static.a
+      - libmodulepath.a
+      - libmodulepath_mt.a
+      - libmyfort.a
+      - libnetwork_static.a
+      - libnetwork_utils_static.a
+      - liboperatingsystem_static.a
+      - libosinfo_static.a
+      - libosspecific_static.a
+      - libpciedevices_static.a
+      - libpciedevicesuni_static.a
+      - libpciinventory_static.a
+      - libqlogic_static.a
+      - libraidlink_static.a
+      - libregistrykey_static.a
+      - libremotediags_static.a
+      - librepository_static.a
+      - libslpclient.a
+      - libsmbioslib_static.a
+      - libsmmapp.a
+      - libsmmffdc_static.a
+      - libsmmupdater_static.a
+      - libsymbols.a
+      - libsysteminfo_static.a
+      - libsystemservice_static.a
+      - libuntgz.a
+      - libupdate_common.a
+      - libusblancfg_static.a
+      - libusblansetting_static.a
+      - libversionhandler.a
+      - libvmesxiupdate_static.a
+      - libwidgets_static.a
+      - libxFirmwareConfig_static.a
+      - libxslpmarker_static.a
+    [test_sample]
+      - ModManager_api_test
+      - arcconf_test
+      - comparepackage_apitest
+      - errorcode_managerTest
+      - fod_apitest
+      - globalconfig_api_test
+      - ipmiEventlog_apitest
+      - ipmiProperty_test
+      - ipmi_client_test
+      - lightpath_apitest
+      - optionupdate_apitest
+      - osspecificTest
+      - pcidevice_test
+      - progress_sample
+      - querypackage_apitest
+      - sample_UEFIHiddenLog
+      - sample_acquire
+      - sample_acquire_bmc_ports
+      - sample_chassislog
+      - sample_checktrustkey
+      - sample_driverinfo
+      - sample_emulex
+      - sample_enviromentals
+      - sample_exsi_inventory
+      - sample_ffdc
+      - sample_filetransfer
+      - sample_getcert
+      - sample_hardwareinventory
+      - sample_immapp
+      - sample_immtype
+      - sample_immviacimupdate
+      - sample_intelnic
+      - sample_ipmi_lan
+      - sample_kmsrestapi
+      - sample_lsi
+      - sample_mellanox
+      - sample_network
+      - sample_network_utils
+      - sample_networksetting
+      - sample_operatingsystem
+      - sample_osinventory
+      - sample_pciinventory
+      - sample_power_management
+      - sample_qlogic
+      - sample_raidlink
+      - sample_remotediags
+      - sample_remotefileopt
+      - sample_smbios
+      - sample_softwareidentity
+      - sample_ssd
+      - sample_usblancfg
+      - sample_vmesxiupdate
+      - samples_uri
+      - systeminfo_apitest
+      - test_amdconfigipmi
+      - test_broadcom
+      - test_brocade
+      - test_cimom
+      - test_crypt
+      - test_emulex
+      - test_ffdc
+      - test_fusionio
+      - test_hardwareinventory
+      - test_intelnic
+      - test_ipmiEventlog
+      - test_kmsrestapi
+      - test_lightpath
+      - test_logger
+      - test_logger_mt
+      - test_mellanox
+      - test_network_utils
+      - test_networksetting
+      - test_osinventory
+      - test_pciinventory
+      - test_qlogic
+      - test_qlogicnx2
+      - test_stl_thread_safe
+      - test_vmesxiupdate
+      - test_xfwcimupdate
+      - untgz_test
+      - xFirmwareConfig_apitest
+      - xFirmwareInventory_apitest
+      - xfirmwareupdate_apitest
+    [unknown]
+      - FortranCInterface
+      - VerifyFortranC
+      - asu
+      - asum
+      - check_ipmi
+      - cmm_ffdc
+      - cmm_flashup
+      - cmm_inventory
+      - dsa
+      - hwscan
+      - ipmi_client_runner
+      - moduleupdater
+      - portable_installer
+      - portable_packager
+      - slpmarker
+      - switch_cimup
+      - uxspi
+      - xmlogger
+      - xmunzip
+      - xmzip
+
+  SBOM 列出但 CMake 未定義:
+    [linux_specific]
+      - libHBAAPI.so
+      - libcrypto.so
+      - libipmctl.so
+      - liblddf.so
+      - libmvraid.so
+      - libpegclient.so
+      - libpegcommon.so
+      - libpegslp_client.so
+      - libqlsdm.so
+      - libsnmp++.so
+      - libssh2.so
+      - libssl.so
+      - storelib.so
+      - storelib8.so
+      - storelibir-3.so
+      - storelibit.so
+    [third_party]
+      - libboost_atomic.so
+      - libboost_chrono.so
+      - libboost_cobalt.so
+      - libboost_container.so
+      - libboost_date_time.so
+      - libboost_filesystem.so
+      - libboost_json.so
+      - libboost_locale.so
+      - libboost_program_options.so
+      - libboost_regex.so
+      - libboost_system.so
+      - libboost_thread.so
+      - libcurl.so
+      - libcurl.so.4
+    [unknown]
+      - SAS2IR_linux_x64
+      - arcconf
+      - banner_bg.png
+      - coe-30002-01_lenovo_license_agreement.pdf
+      - e.gif
+      - eventslog_convert_x64
+      - fdrvwl
+      - flashdrv.bin
+      - header_bg.png
+      - i.gif
+      - ipmctl
+      - ipmiutil_x64_nh
+      - lenovo_logo.png
+      - libcrypto.so.3
+      - libipmctl.so.4
+      - libpegclient.so.1
+      - libpegcommon.so.1
+      - libpegslp_client.so.1
+      - libssh2.so.1
+      - libssl.so.3
+      - lnvgy_utl_lxce_onecli01m-5.5.0_linux_indiv.tgz
+      - lnvgy_utl_lxceb_onecli01m-5.5.0_linux_indiv.bin
+      - lnvgy_utl_lxcer_onecli01m-5.5.0_linux_indiv.rpm
+      - mnv_cli
+      - mvcli
+      - onecli
+      - qaucli
+      - rdmount
+      - rdumount
+      - sizes.bin
+      - ssdcli
+      - ssdcli.bin
+      - storcli
+      - storcli-007.3205.0000.0000-source.zip
+      - storcli2
+      - storcli2-008.0012.0000.0004-source.zip
+      - time_estimation
+      - w.gif
+
+====================================================================================================
+  結果: 來源參照 PASS | CMake 比對: FAIL
+====================================================================================================
+

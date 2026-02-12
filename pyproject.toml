@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sbom-checker"
+version = "1.0.0"
+description = "SBOM CSV 交叉驗證工具 — 比對 CMakeLists.txt 輸出與 SBOM 來源參照"
+requires-python = ">=3.8"
+
+[project.scripts]
+sbom-checker = "sbom_checker.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
