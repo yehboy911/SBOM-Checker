@@ -2,11 +2,13 @@
 
 import argparse
 import sys
+from pathlib import Path
 
 from .sbom_parser import SbomParser
 from .cmake_scanner import CmakeScanner
 from .validator import SbomValidator
 from .report import ReportFormatter
+from .xlsx_reviewer import review_xlsx, auto_detect_platform
 
 
 def main():
@@ -44,12 +46,69 @@ def main():
         help="輸出平台（預設 linux）",
     )
 
+    # --- review-xlsx 子指令 ---
+    rx_parser = subparsers.add_parser("review-xlsx", help="審查 Excel 格式 SBOM (UpdateXpress)")
+    rx_parser.add_argument("xlsx_path", help="SBOM .xlsx 檔案路徑")
+    rx_parser.add_argument(
+        "--platform", choices=["linux", "windows"],
+        help="平台 (預設從檔名自動偵測)",
+    )
+    rx_parser.add_argument("--deps-info",   help="dependencies_info.json 路徑 (主要 npm 參照)")
+    rx_parser.add_argument("--lock",        help="package-lock.json 路徑 (次要 npm 參照)")
+    rx_parser.add_argument(
+        "--fossa-json",
+        help="FOSSA 匯出 JSON 路徑 (第三優先 npm 參照)\n"
+             "Ref: ~/.claude/skills/learned/Lenovo's Software Analysis Framework.pdf",
+    )
+    rx_parser.add_argument("--onecli-json", help="OneCLI SBOM 資料 JSON 路徑 (覆蓋預設)")
+    rx_parser.add_argument("--output",      help="輸出路徑 (預設: <原檔名>_reviewed.xlsx)")
+
+    # --- gen-tpn 子指令 ---
+    gt_parser = subparsers.add_parser(
+        "gen-tpn",
+        help="從 FOSSA JSON + OneCLI TPN + package-lock.json 生成 TPN draft (Approach B)",
+    )
+    gt_parser.add_argument("--platform",    required=True, choices=["win", "linux"],
+                           help="平台: win 或 linux")
+    gt_parser.add_argument("--fossa-json",  required=True,
+                           help="FOSSA 匯出 JSON 路徑 (ux_win_fossa.json / ux_linux_fossa_json.json)")
+    gt_parser.add_argument("--onecli-tpn",  required=True,
+                           help="OneCLI TPN FINAL .txt 路徑 (C/C++ copy-forward 來源)")
+    gt_parser.add_argument("--pkg-lock",    required=True,
+                           help="package-lock.json 路徑 (npm 版本 + transitive stubs)")
+    gt_parser.add_argument("--output",      required=True,
+                           help="輸出 TPN draft .txt 路徑")
+    gt_parser.add_argument("--version",     default="",
+                           help="產品版本號 (用於 TPN header，例如 5.4.0)")
+
+    # --- tpn-delta 子指令 ---
+    td_parser = subparsers.add_parser(
+        "tpn-delta",
+        help="比對兩版本 TPN/SBOM，輸出 delta 報告 (v5.3.x → v5.4.x)",
+    )
+    td_parser.add_argument("--platform",    required=True, choices=["win", "linux"],
+                           help="平台: win 或 linux")
+    td_parser.add_argument("--old-tpn",     help="舊版 TPN FINAL .txt 路徑")
+    td_parser.add_argument("--new-tpn",     help="新版 TPN FINAL/DRAFT .txt 路徑")
+    td_parser.add_argument("--old-sbom",    help="舊版 SBOM .xlsx 路徑 (TPN 不存在時使用)")
+    td_parser.add_argument("--new-sbom",    help="新版 SBOM .xlsx 路徑 (TPN 不存在時使用)")
+    td_parser.add_argument("--old-label",   default="v5.3.x", help="舊版標籤 (預設: v5.3.x)")
+    td_parser.add_argument("--new-label",   default="v5.4.x", help="新版標籤 (預設: v5.4.x)")
+    td_parser.add_argument("--output",      required=True,
+                           help="輸出 delta 報告 .md 路徑")
+
     args = parser.parse_args()
 
     if args.command == "check":
         cmd_check(args)
     elif args.command == "scan":
         cmd_scan(args)
+    elif args.command == "review-xlsx":
+        cmd_review_xlsx(args)
+    elif args.command == "gen-tpn":
+        cmd_gen_tpn(args)
+    elif args.command == "tpn-delta":
+        cmd_tpn_delta(args)
     else:
         parser.print_help()
         sys.exit(1)
@@ -138,6 +197,77 @@ def cmd_scan(args):
         print(f"  {t.target_name:<25} {t.target_type:<12} {output:<30} {t.platform}")
 
     print("=" * 90)
+
+
+def cmd_review_xlsx(args):
+    """執行 Excel SBOM 審查 (UpdateXpress)"""
+    try:
+        platform = args.platform or auto_detect_platform(args.xlsx_path)
+    except ValueError as e:
+        print(f"錯誤: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        review_xlsx(
+            sbom_path=args.xlsx_path,
+            platform=platform,
+            deps_info_path=args.deps_info,
+            lock_path=args.lock,
+            fossa_json_path=args.fossa_json,
+            onecli_json_path=args.onecli_json,
+            output_path=args.output,
+        )
+    except FileNotFoundError as e:
+        print(f"錯誤: 找不到檔案 {e}", file=sys.stderr)
+        sys.exit(1)
+    except ImportError:
+        print("錯誤: 需要 openpyxl。請執行: pip install openpyxl", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"錯誤: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_gen_tpn(args):
+    """生成 TPN draft (Approach B: FULL + STUB)"""
+    from .tpn_generator import generate_tpn
+    try:
+        generate_tpn(
+            platform=args.platform,
+            fossa_json_path=Path(args.fossa_json),
+            onecli_tpn_path=Path(args.onecli_tpn),
+            pkg_lock_path=Path(args.pkg_lock),
+            output_path=Path(args.output),
+            product_version=args.version,
+        )
+    except FileNotFoundError as e:
+        print(f"錯誤: 找不到檔案 {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"錯誤: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_tpn_delta(args):
+    """比對兩版本 TPN/SBOM delta"""
+    from .tpn_delta import run_delta
+    try:
+        run_delta(
+            platform=args.platform,
+            old_tpn_path=Path(args.old_tpn) if args.old_tpn else None,
+            new_tpn_path=Path(args.new_tpn) if args.new_tpn else None,
+            old_sbom_path=Path(args.old_sbom) if args.old_sbom else None,
+            new_sbom_path=Path(args.new_sbom) if args.new_sbom else None,
+            output_path=Path(args.output),
+            old_label=args.old_label,
+            new_label=args.new_label,
+        )
+    except FileNotFoundError as e:
+        print(f"錯誤: 找不到檔案 {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"錯誤: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

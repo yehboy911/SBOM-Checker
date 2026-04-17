@@ -1,218 +1,170 @@
 ---
-name: validating-sbom-coverage
-description: This skill should be used when the user asks to "validate SBOM", "check SBOM coverage", "cross-reference CMake and SBOM", "verify SBOM output and input", "compare CMakeLists.txt with SBOM", "classify SBOM differences", or mentions SBOM validation, CMake coverage checking, source reference verification, or SBOM cross-validation.
+name: scanning-boost-dependencies
+description: This skill should be used when the user asks to "scan Boost dependencies", "analyze CMakeLists.txt", "find Boost libraries in DLL/SO files", "convert SBOM from CSV", "generate Boost dependency report", or mentions Boost library analysis, CMake dependency scanning, or SBOM filtering.
 ---
 
-# Validating SBOM Coverage
+# Scanning Boost Dependencies
 
-This skill provides guidance for cross-validating SBOM CSV files against CMakeLists.txt outputs and automatically classifying discrepancies.
+This skill provides guidance for scanning Boost Library dependencies in CMake projects and generating formatted reports.
 
 ## Overview
 
-`sbom-checker` is a Python CLI tool for SBOM CSV cross-validation:
-- Verifying source references in SBOM match actual outputs
-- Cross-comparing CMakeLists.txt targets with SBOM components
-- Automatically classifying differences into 6 priority categories
-- Generating legal-team-friendly validation reports
+`boost-scanner` is a Python CLI tool for:
+- Recursively scanning CMakeLists.txt files for Boost Library dependencies
+- Identifying which Boost libraries exist in .dll (Windows) or .so (Linux) files
+- Generating formatted dependency reports with platform context
+- SBOM filtering to match against known component lists
+- Converting CSV export files to cleaned SBOM lists
 
 ### Architecture
 
 ```
-src/sbom_checker/
-├── cli.py              # argparse entry point + subcommands (check, scan)
-├── sbom_parser.py      # SBOM CSV parsing (FOSSA/Excel format support)
-├── cmake_scanner.py    # CMakeLists.txt scanning (platform-aware)
-├── validator.py        # Cross-validation + auto-classification logic
-└── report.py           # Report formatting (legal-friendly format)
+src/boost_scanner/
+├── scanner.py        # BoostScanner class - core scanning logic
+├── sbom_converter.py # SbomConverter class - CSV → SBOM conversion
+├── cli.py            # argparse entry point (boost-scanner command)
+└── __init__.py       # Exports BoostScanner, SbomConverter
 ```
-
-### Auto-Classification Categories
-
-| Priority | Category | Rule | Description |
-|:---------|:---------|:-----|:------------|
-| 1 | `cmake_internal` | FortranLib, cmake_* | CMake internal tools, should not be in SBOM |
-| 2 | `test_sample` | test*, sample*, *test* | Test/sample programs, development only |
-| 3 | `static_lib` | .a or .lib extension | Static libraries, embedded in other targets |
-| 4 | `third_party` | boost, curl, zlib, openssl, ... | Third-party dependencies, defined in SBOM |
-| 5 | `platform_specific` | .exe, .dll, .so, .dylib | Platform-specific files, needs confirmation |
-| 6 | `unknown` | Other items | Requires manual review |
 
 ## When This Skill Applies
 
 This skill activates when the request involves:
-- Validating SBOM CSV against source code
-- Checking CMake target coverage in SBOM
-- Verifying source references are correct
-- Cross-comparing CMakeLists.txt outputs with SBOM components
-- Classifying SBOM discrepancies
-- Generating SBOM validation reports
+- Scanning CMake projects for Boost dependencies
+- Analyzing which DLL/SO files contain Boost libraries
+- Generating Boost dependency reports
+- Filtering results against SBOM lists
+- Converting CSV exports to SBOM format
 
 ## Instructions
 
 ### Installation
 
-Ensure `sbom-checker` is installed via pipx:
+Ensure `boost-scanner` is installed via pipx:
 
 ```bash
 # Check if installed
-which sbom-checker || ~/.local/bin/sbom-checker --help
+which boost-scanner || ~/.local/bin/boost-scanner --help
 
 # Install if needed
-pipx install -e "/Users/Yehboy/Claude Code/sbom_checker"
+pipx install -e "/Users/Yehboy/Claude Code/boost_filter"
 ```
 
-### Validating SBOM (Full Cross-Validation)
+### Scanning Boost Dependencies
 
-Run complete validation including source reference check and CMake cross-comparison:
+Scan a directory for CMakeLists.txt files and extract Boost dependencies:
 
 ```bash
-# Linux platform validation
-sbom-checker check <sbom.csv> --source-dir <source_root> --platform linux
+# Scan current directory
+boost-scanner
 
-# Windows platform validation
-sbom-checker check <sbom.csv> --source-dir <source_root> --platform windows
+# Scan specific directory
+boost-scanner /path/to/cmake/project
 
-# Auto-detect platform from CSV content
-sbom-checker check <sbom.csv> --source-dir <source_root>
+# Scan with SBOM filter
+boost-scanner /path/to/project --sbom /path/to/sbom.txt
 ```
 
-### Source Reference Only Check
+### SBOM Filtering
 
-Verify SBOM source references without requiring source code access:
+Filter scan results against a known SBOM component list:
+
+1. Prepare SBOM list file (one component per line)
+2. Run scanner with `--sbom` flag
+3. Results show only matching components
+
+### Converting CSV to SBOM
+
+Convert dependency export CSV files to cleaned SBOM lists:
 
 ```bash
-sbom-checker check <sbom.csv> --check-refs-only
+# Single CSV conversion
+boost-scanner convert-sbom input.csv -o sbom.txt
+
+# Multiple CSV merge (auto-detects platform)
+boost-scanner convert-sbom win.csv linux.csv -o sbom_combined.txt
+
+# Output to stdout
+boost-scanner convert-sbom input.csv
 ```
 
-### Scanning CMake Targets
-
-Scan CMakeLists.txt files to understand project structure before validation:
-
-```bash
-# Scan with Linux output format
-sbom-checker scan <source_root> --platform linux
-
-# Scan with Windows output format
-sbom-checker scan <source_root> --platform windows
-```
-
-### Interpreting Results
-
-**Source Reference Validation:**
-- `PASS`: All SBOM targets have valid source references
-- `FAIL`: Missing or invalid source references found
-
-**CMake Coverage:**
-- `cmake-only`: Targets built by CMake but missing from SBOM
-- `sbom-only`: Components in SBOM not found in CMake targets
-
-**Classification Statistics:**
-- Items categorized as `cmake_internal`, `test_sample`, `static_lib` are typically safe to ignore
-- `third_party` items are usually covered by other SBOM entries
-- `platform_specific` and `unknown` require manual review
+Platform detection:
+- `.dll` files → Windows platform
+- `.so` files → Linux platform
 
 ## Examples
 
-### Example 1: Complete Validation Workflow
+### Example 1: Basic Project Scan
 
 ```bash
-# Step 1: Scan CMake targets to understand the project
-sbom-checker scan /path/to/OneCLI --platform linux
-
-# Step 2: Run full SBOM validation
-sbom-checker check /path/to/linux_sbom.csv \
-  --source-dir /path/to/OneCLI \
-  --platform linux
-
-# Step 3: Save report for legal review
-sbom-checker check /path/to/linux_sbom.csv \
-  --source-dir /path/to/OneCLI \
-  --platform linux > linux_validation_report.txt
+boost-scanner ~/projects/my-cmake-app
 ```
 
-### Example 2: Multi-Platform Validation
+Output:
+```
+=== Boost Library Dependencies Report ===
 
-```bash
-# Linux validation
-sbom-checker check linux_sbom.csv \
-  --source-dir /path/to/source \
-  --platform linux > linux_report.txt
+[Target: my_app] (Windows)
+  - boost_filesystem
+  - boost_system
+  - boost_thread
 
-# Windows validation
-sbom-checker check windows_sbom.csv \
-  --source-dir /path/to/source \
-  --platform windows > windows_report.txt
+[Target: my_app] (Linux)
+  - boost_filesystem
+  - boost_system
 ```
 
-### Example 3: Quick Source Reference Check
+### Example 2: SBOM Filtered Scan
 
 ```bash
-# Check only source references (no source code needed)
-sbom-checker check /path/to/sbom.csv --check-refs-only
+boost-scanner ~/projects/my-cmake-app --sbom ~/sbom/approved-libs.txt
 ```
 
-### Example 4: Identifying Issues
+### Example 3: CSV to SBOM Conversion
 
 ```bash
-# Run validation and filter for items needing attention
-sbom-checker check sbom.csv --source-dir /path/to/src --platform linux | grep -E "(unknown|platform_specific)"
+# Windows DLL list
+boost-scanner convert-sbom windows_deps.csv -o sbom_win.txt
 
-# Count items by category
-sbom-checker check sbom.csv --source-dir /path/to/src --platform linux | grep -E "^\s+(cmake_internal|test_sample|static_lib|third_party|platform_specific|unknown):"
+# Merge Windows and Linux
+boost-scanner convert-sbom win.csv linux.csv -o sbom_all.txt
+```
+
+### Example 4: Direct Python Execution
+
+```bash
+python3 src/boost_scanner/cli.py /path/to/project --sbom /path/to/sbom.txt
 ```
 
 ## Output Format
 
-### Validation Summary
+### Dependency Report
+
+Reports are grouped by target and platform:
 
 ```
-已解析: 573 個 Target, 4284 個 Source, 8 個區段, 平台: linux
-CMake 掃描: 539 個 target
+=== Boost Library Dependencies Report ===
 
-=== SBOM 驗證報告 ===
-
-【來源參照驗證】
-狀態: ✅ PASS
-Target 數: 573
-Source 數: 4284
-問題數: 0
-
-【CMake 交叉比對】
-CMake Targets: 539
-SBOM Targets: 573
-
-分類統計:
-  cmake_internal:     1 (CMake-only)
-  static_lib:        93 (CMake-only)
-  test_sample:       83 (CMake-only)
-  linux_specific:    48 (32 CMake-only, 16 SBOM-only)
-  third_party:       14 (SBOM-only)
-  unknown:           58 (20 CMake-only, 38 SBOM-only)
-```
-
-### Classification Details
-
-Each category is listed with its items for manual review:
-
-```
-【cmake_internal】(1 項)
-  - FortranLib (CMake-only)
-
-【static_lib】(93 項)
-  - libfoo.a (CMake-only)
-  - libbar.a (CMake-only)
+[Target: <target_name>] (<Platform>)
+  - boost_<library1>
+  - boost_<library2>
   ...
+```
 
-【unknown】(58 項) ⚠️ 需人工審查
-  - mystery_component (CMake-only)
-  - unclassified_lib (SBOM-only)
-  ...
+### SBOM Output
+
+Clean list of normalized library names:
+
+```
+boost_chrono
+boost_container
+boost_context
+boost_filesystem
+boost_system
+boost_thread
 ```
 
 ## Additional Resources
 
-- **Project CLAUDE.md**: `/Users/Yehboy/Claude Code/sbom_checker/CLAUDE.md`
-- **Source Code**: `/Users/Yehboy/Claude Code/sbom_checker/src/sbom_checker/`
-- **Reports Directory**: `/Users/Yehboy/Claude Code/sbom_checker/reports/`
-- **Commands**: `/check-sbom`, `/scan-cmake`
-- **GitHub**: https://github.com/yehboy911/SBOM-Checker
+- **Project CLAUDE.md**: `/Users/Yehboy/Claude Code/boost_filter/CLAUDE.md`
+- **Source Code**: `/Users/Yehboy/Claude Code/boost_filter/src/boost_scanner/`
+- **Commands**: `/scan-boost`, `/convert-sbom`

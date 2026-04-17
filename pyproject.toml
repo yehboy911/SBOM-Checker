@@ -4,9 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sbom-checker"
-version = "1.0.0"
-description = "SBOM CSV 交叉驗證工具 — 比對 CMakeLists.txt 輸出與 SBOM 來源參照"
+version = "2.0.0"
+description = "SBOM 驗證工具 — CSV 交叉驗證 (CMake) + Excel SBOM 審查 (UpdateXpress)"
 requires-python = ">=3.8"
+dependencies = [
+    "openpyxl>=3.1",
+]
 
 [project.scripts]
 sbom-checker = "sbom_checker.cli:main"
