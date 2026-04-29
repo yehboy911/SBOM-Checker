@@ -10,6 +10,7 @@ from .validator import SbomValidator
 from .report import ReportFormatter
 from .xlsx_reviewer import review_xlsx, auto_detect_platform
 from .bomc_xlsx_reviewer import review_bomc
+from .notice_reviewer import review_notice
 
 
 def main():
@@ -90,6 +91,15 @@ def main():
     rb_parser.add_argument("--lock",   help="package-lock.json 路徑 (npm 參照)")
     rb_parser.add_argument("--output", help="輸出路徑 (預設: <原檔名>_reviewed.xlsx)")
 
+    # --- review-notice 子指令 ---
+    rn_parser = subparsers.add_parser("review-notice", help="比對 Notice TXT 與 SBOM Excel")
+    rn_parser.add_argument("notice_path", help="Third Party Notice .txt 檔案路徑")
+    rn_parser.add_argument("--sbom",    required=True, help="SBOM .xlsx 檔案路徑")
+    rn_parser.add_argument(
+        "--product", choices=["ux", "bomc"],
+        help="產品類型 (預設從 SBOM 檔名自動偵測: 含 'bomc' → bomc, 否則 → ux)",
+    )
+
     # --- review-onecli 子指令 (BACKLOG — stub only) ---
     ro_parser = subparsers.add_parser(
         "review-onecli",
@@ -141,6 +151,8 @@ def main():
         cmd_review_ux(args)
     elif args.command == "review-bomc":
         cmd_review_bomc(args)
+    elif args.command == "review-notice":
+        cmd_review_notice(args)
     elif args.command == "review-onecli":
         cmd_review_onecli(args)
     elif args.command == "gen-tpn":
@@ -280,6 +292,25 @@ def cmd_review_bomc(args):
             platform=platform,
             lock_path=args.lock,
             output_path=args.output,
+        )
+    except FileNotFoundError as e:
+        print(f"錯誤: 找不到檔案 {e}", file=sys.stderr)
+        sys.exit(1)
+    except ImportError:
+        print("錯誤: 需要 openpyxl。請執行: pip install openpyxl", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"錯誤: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_review_notice(args):
+    """比對 Notice TXT 與 SBOM Excel"""
+    try:
+        review_notice(
+            notice_path=args.notice_path,
+            sbom_path=args.sbom,
+            product=args.product,
         )
     except FileNotFoundError as e:
         print(f"錯誤: 找不到檔案 {e}", file=sys.stderr)
