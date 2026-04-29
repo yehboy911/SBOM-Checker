@@ -9,6 +9,7 @@ from .cmake_scanner import CmakeScanner
 from .validator import SbomValidator
 from .report import ReportFormatter
 from .xlsx_reviewer import review_xlsx, auto_detect_platform
+from .bomc_xlsx_reviewer import review_bomc
 
 
 def main():
@@ -46,8 +47,24 @@ def main():
         help="輸出平台（預設 linux）",
     )
 
-    # --- review-xlsx 子指令 ---
-    rx_parser = subparsers.add_parser("review-xlsx", help="審查 Excel 格式 SBOM (UpdateXpress)")
+    # --- review-ux 子指令 (preferred name; review-xlsx kept as legacy alias) ---
+    ux_parser = subparsers.add_parser("review-ux", help="審查 UpdateXpress Excel SBOM")
+    ux_parser.add_argument("xlsx_path", help="SBOM .xlsx 檔案路徑")
+    ux_parser.add_argument(
+        "--platform", choices=["linux", "windows"],
+        help="平台 (預設從檔名自動偵測)",
+    )
+    ux_parser.add_argument("--deps-info",   help="dependencies_info.json 路徑 (主要 npm 參照)")
+    ux_parser.add_argument("--lock",        help="package-lock.json 路徑 (次要 npm 參照)")
+    ux_parser.add_argument(
+        "--fossa-json",
+        help="FOSSA 匯出 JSON 路徑 (第三優先 npm 參照)",
+    )
+    ux_parser.add_argument("--onecli-json", help="OneCLI SBOM 資料 JSON 路徑 (覆蓋預設)")
+    ux_parser.add_argument("--output",      help="輸出路徑 (預設: <原檔名>_reviewed.xlsx)")
+
+    # --- review-xlsx 子指令 (legacy alias for review-ux) ---
+    rx_parser = subparsers.add_parser("review-xlsx", help="[legacy] 同 review-ux")
     rx_parser.add_argument("xlsx_path", help="SBOM .xlsx 檔案路徑")
     rx_parser.add_argument(
         "--platform", choices=["linux", "windows"],
@@ -62,6 +79,23 @@ def main():
     )
     rx_parser.add_argument("--onecli-json", help="OneCLI SBOM 資料 JSON 路徑 (覆蓋預設)")
     rx_parser.add_argument("--output",      help="輸出路徑 (預設: <原檔名>_reviewed.xlsx)")
+
+    # --- review-bomc 子指令 ---
+    rb_parser = subparsers.add_parser("review-bomc", help="審查 BoMC Excel SBOM")
+    rb_parser.add_argument("xlsx_path", help="SBOM .xlsx 檔案路徑")
+    rb_parser.add_argument(
+        "--platform", choices=["linux", "windows"],
+        help="平台 (預設從檔名自動偵測)",
+    )
+    rb_parser.add_argument("--lock",   help="package-lock.json 路徑 (npm 參照)")
+    rb_parser.add_argument("--output", help="輸出路徑 (預設: <原檔名>_reviewed.xlsx)")
+
+    # --- review-onecli 子指令 (BACKLOG — stub only) ---
+    ro_parser = subparsers.add_parser(
+        "review-onecli",
+        help="[BACKLOG] 審查 OneCLI 自己的 SBOM Excel (尚未實作)",
+    )
+    ro_parser.add_argument("xlsx_path", help="OneCLI SBOM .xlsx 檔案路徑")
 
     # --- gen-tpn 子指令 ---
     gt_parser = subparsers.add_parser(
@@ -103,8 +137,12 @@ def main():
         cmd_check(args)
     elif args.command == "scan":
         cmd_scan(args)
-    elif args.command == "review-xlsx":
-        cmd_review_xlsx(args)
+    elif args.command in ("review-ux", "review-xlsx"):
+        cmd_review_ux(args)
+    elif args.command == "review-bomc":
+        cmd_review_bomc(args)
+    elif args.command == "review-onecli":
+        cmd_review_onecli(args)
     elif args.command == "gen-tpn":
         cmd_gen_tpn(args)
     elif args.command == "tpn-delta":
@@ -199,8 +237,8 @@ def cmd_scan(args):
     print("=" * 90)
 
 
-def cmd_review_xlsx(args):
-    """執行 Excel SBOM 審查 (UpdateXpress)"""
+def cmd_review_ux(args):
+    """執行 UpdateXpress Excel SBOM 審查 (review-ux / review-xlsx)"""
     try:
         platform = args.platform or auto_detect_platform(args.xlsx_path)
     except ValueError as e:
@@ -226,6 +264,43 @@ def cmd_review_xlsx(args):
     except Exception as e:
         print(f"錯誤: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+def cmd_review_bomc(args):
+    """執行 BoMC Excel SBOM 審查"""
+    try:
+        platform = args.platform or auto_detect_platform(args.xlsx_path)
+    except ValueError as e:
+        print(f"錯誤: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        review_bomc(
+            sbom_path=args.xlsx_path,
+            platform=platform,
+            lock_path=args.lock,
+            output_path=args.output,
+        )
+    except FileNotFoundError as e:
+        print(f"錯誤: 找不到檔案 {e}", file=sys.stderr)
+        sys.exit(1)
+    except ImportError:
+        print("錯誤: 需要 openpyxl。請執行: pip install openpyxl", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"錯誤: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_review_onecli(args):
+    """[BACKLOG] OneCLI SBOM 審查 — 尚未實作"""
+    print(
+        "review-onecli 尚未實作 (BACKLOG)。\n"
+        "計畫方向：OPTION-A — 審查 OneCLI 自己的 SBOM Excel，\n"
+        "使用 OneCLI 的 sbom_checker review-ux 流程進行交叉驗證。",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 def cmd_gen_tpn(args):

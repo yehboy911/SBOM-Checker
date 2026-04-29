@@ -219,7 +219,11 @@ def _fill_count(ws, row_set: set, col: int, hex_color: str) -> int:
     for row in row_set:
         cell = ws.cell(row=row, column=col)
         if cell.fill and cell.fill.fill_type == "solid":
-            if hex_upper in cell.fill.fgColor.rgb.upper():
+            try:
+                rgb_str = str(cell.fill.fgColor.rgb)
+            except (AttributeError, TypeError):
+                continue
+            if hex_upper in rgb_str.upper():
                 count += 1
     return count
 
@@ -307,6 +311,8 @@ class XlsxReviewer:
         self._phase6_license_c(ws, groups)
         p7_f, p7_g          = self._phase7_fg_validate(ws, groups)
         p8_blue, p8_orange, p8_orange_list = self._phase8_onecli_xref(ws, groups)
+
+        self._extra_phases(wb, ws, groups)
 
         wb.save(self.output_path)
         print(f"\n[Save] → {self.output_path}")
@@ -687,6 +693,12 @@ class XlsxReviewer:
             for r, name in orange_list[:20]:
                 print(f"           Row {r}: {name!r}")
         return blue, orange, orange_list
+
+    # ------------------------------------------------------------------
+    # Extension hook — called before wb.save(); subclasses override
+    # ------------------------------------------------------------------
+    def _extra_phases(self, wb, ws, groups: dict) -> None:
+        pass
 
     # ------------------------------------------------------------------
     # Manual actions detection
