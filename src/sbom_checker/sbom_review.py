@@ -1670,7 +1670,9 @@ def _print_summary(label: str, res: dict) -> None:
 
 
 _SBOM_GLOB = "lnvgy_utl_lxce_onecli_{platform}_indiv*-SBOM-*.xlsx"
-_VERSION_RE = re.compile(r"-(\d+\.\d+)\.x[-_(]")
+# Matches both Linux (`-5.6.x-(Tasmania)`) and Windows (`-v5.6.x (Tasmania)`) forms.
+_VERSION_RE   = re.compile(r"-v?(\d+\.\d+)\.x[-_( ]")
+_VERSION_SAFE = re.compile(r"^[\d.]+$")
 
 
 def _find_sbom(base: Path, platform: str) -> Path:
@@ -1701,6 +1703,7 @@ def _extract_version(sbom: Path) -> str:
 
 
 def _parse_args() -> argparse.Namespace:
+    """Define and parse command-line arguments for the SBOM review CLI."""
     p = argparse.ArgumentParser(
         prog="sbom_review.py",
         description="OneCLI SBOM review — dual-platform (Linux + Windows) "
@@ -1732,6 +1735,9 @@ def main() -> int:
     SBOM_LINUX = args.linux_sbom.resolve() if args.linux_sbom else _find_sbom(BASE, "linux")
     SBOM_WIN   = args.windows_sbom.resolve() if args.windows_sbom else _find_sbom(BASE, "windows")
     version    = args.version or _extract_version(SBOM_LINUX)
+    if not _VERSION_SAFE.fullmatch(version) and version != "unknown":
+        print(f"ERROR: --version must be numeric (got: {version!r})")
+        return 1
     REPORT_OUT = args.output.resolve() if args.output else BASE / f"sbom_review_{version}.md"
 
     print(f"=== OneCLI v{version} SBOM Review ===")
