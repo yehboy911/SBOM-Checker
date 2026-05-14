@@ -1,8 +1,17 @@
 """
-sbom_review.py — OneCLI v5.6.0 SBOM review
-Checks: format validation, version correctness, duplicate versions.
-Output: console summary + sbom_review_5.6.0.md in current directory.
+sbom_review.py — OneCLI SBOM review (Linux + Windows, dual-platform).
+
+Checks: format, versions, duplicates, Col D/E/F annotations, boost linkage,
+I/O tool versions, source archive coverage, CP-12 boost sub-libraries.
+
+Usage:
+    cd /path/to/OneCLI && python3 sbom_review.py           # zero-config
+    python3 sbom_review.py --base /path/to/OneCLI          # explicit base
+    python3 sbom_review.py --help                          # all options
+
+Output: console summary + sbom_review_<version>.md in <base>.
 """
+import argparse
 import re
 import sys
 from datetime import date
@@ -11,13 +20,12 @@ from pathlib import Path
 import openpyxl
 
 # ---------------------------------------------------------------------------
-# Paths
+# Paths — module-level stubs; main() overwrites them from CLI args / glob.
 # ---------------------------------------------------------------------------
-BASE = Path("/Users/Yehboy/OSC/LXCE_5.6.0/OneCLI")
-
-SBOM_LINUX = BASE / "lnvgy_utl_lxce_onecli_linux_indiv (tgz)-5.6.x-(Tasmania)-SBOM-13May2026.xlsx"
-SBOM_WIN   = BASE / "lnvgy_utl_lxce_onecli_windows_indiv (zip)-v5.6.x (Tasmania)-SBOM-12May2026.xlsx"
-REPORT_OUT = BASE / "sbom_review_5.6.0.md"
+BASE: Path       = Path.cwd()
+SBOM_LINUX: Path = Path()
+SBOM_WIN: Path   = Path()
+REPORT_OUT: Path = Path()
 
 HEADER_ROW = 20   # 1-based row index of the column header row in the SBOM
 
@@ -1661,8 +1669,76 @@ def _print_summary(label: str, res: dict) -> None:
                 print(f"      {icon} {f['library']:<15} [{f['status']}] {f['note'][:70]}")
 
 
+_SBOM_GLOB = "lnvgy_utl_lxce_onecli_{platform}_indiv*-SBOM-*.xlsx"
+_VERSION_RE = re.compile(r"-(\d+\.\d+)\.x[-_(]")
+
+
+def _find_sbom(base: Path, platform: str) -> Path:
+    """Glob for the SBOM .xlsx of `platform` ('linux'/'windows') in `base`.
+
+    Raises SystemExit with an actionable message when 0 or >1 files match.
+    """
+    matches = sorted(base.glob(_SBOM_GLOB.format(platform=platform)))
+    if not matches:
+        raise SystemExit(
+            f"ERROR: no {platform} SBOM found in {base}\n"
+            f"  expected pattern: {_SBOM_GLOB.format(platform=platform)}\n"
+            f"  use --{platform}-sbom PATH to specify explicitly"
+        )
+    if len(matches) > 1:
+        names = "\n    ".join(p.name for p in matches)
+        raise SystemExit(
+            f"ERROR: multiple {platform} SBOM files found in {base}:\n    {names}\n"
+            f"  use --{platform}-sbom PATH to specify which one"
+        )
+    return matches[0]
+
+
+def _extract_version(sbom: Path) -> str:
+    """Pull '5.6.0' style version from an SBOM filename. Fallback: 'unknown'."""
+    m = _VERSION_RE.search(sbom.name)
+    return f"{m.group(1)}.0" if m else "unknown"
+
+
+def _parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        prog="sbom_review.py",
+        description="OneCLI SBOM review — dual-platform (Linux + Windows) "
+                    "compliance checks against extlibs and CMake targets.",
+    )
+    p.add_argument("--base", type=Path, default=Path.cwd(),
+                   help="OneCLI workspace root (default: CWD)")
+    p.add_argument("--linux-sbom", type=Path,
+                   help="Linux SBOM .xlsx path (default: glob in --base)")
+    p.add_argument("--windows-sbom", type=Path,
+                   help="Windows SBOM .xlsx path (default: glob in --base)")
+    p.add_argument("--output", type=Path,
+                   help="Report output path (default: <base>/sbom_review_<version>.md)")
+    p.add_argument("--version", dest="version",
+                   help="Product version for report header "
+                        "(default: extracted from Linux SBOM filename)")
+    return p.parse_args()
+
+
 def main() -> int:
-    print("=== OneCLI v5.6.0 SBOM Review ===\n")
+    args = _parse_args()
+
+    global BASE, SBOM_LINUX, SBOM_WIN, REPORT_OUT
+    BASE = args.base.resolve()
+    if not BASE.is_dir():
+        print(f"ERROR: --base is not a directory: {BASE}")
+        return 1
+
+    SBOM_LINUX = args.linux_sbom.resolve() if args.linux_sbom else _find_sbom(BASE, "linux")
+    SBOM_WIN   = args.windows_sbom.resolve() if args.windows_sbom else _find_sbom(BASE, "windows")
+    version    = args.version or _extract_version(SBOM_LINUX)
+    REPORT_OUT = args.output.resolve() if args.output else BASE / f"sbom_review_{version}.md"
+
+    print(f"=== OneCLI v{version} SBOM Review ===")
+    print(f"  Base    : {BASE}")
+    print(f"  Linux   : {SBOM_LINUX.name}")
+    print(f"  Windows : {SBOM_WIN.name}")
+    print(f"  Output  : {REPORT_OUT}\n")
 
     missing = [p for p in (SBOM_LINUX, SBOM_WIN) if not p.exists()]
     if missing:
