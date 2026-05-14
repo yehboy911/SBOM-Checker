@@ -278,6 +278,145 @@ sbom-checker tpn-delta \
 
 ---
 
+---
+
+## 🔄 OneCLI SBOM 審查工作流程
+
+### 快速全流程 (5 步驟)
+
+```
+Step 1: 準備 SBOM Excel + source tree
+Step 2: 執行 sbom_review.py → 自動跑 10 項 Check
+Step 3: 查閱 sbom_review_<ver>.md → 分類 FAIL / WARN
+Step 4: 修正 SBOM → 重新執行確認
+Step 5: 搭配其他子指令做完整審查
+```
+
+---
+
+### Step 1 — 準備檔案
+
+| 所需項目 | 說明 |
+|---|---|
+| Linux SBOM `.xlsx` | `lnvgy_utl_lxce_onecli_linux_indiv (tgz)-<ver>-SBOM-<date>.xlsx` |
+| Windows SBOM `.xlsx` | `lnvgy_utl_lxce_onecli_windows_indiv (zip)-<ver>-SBOM-<date>.xlsx` |
+| OneCLI source tree | `modularization/` + `onecli/` （Boost target map 需要） |
+
+更新 `src/sbom_checker/sbom_review.py` 頂部路徑設定：
+
+```python
+BASE       = Path("/your/path/to/OneCLI")
+SBOM_LINUX = BASE / "<linux_sbom_filename>.xlsx"
+SBOM_WIN   = BASE / "<windows_sbom_filename>.xlsx"
+REPORT_OUT = BASE / "sbom_review_<version>.md"
+```
+
+---
+
+### Step 2 — 執行審查
+
+```bash
+python3 src/sbom_checker/sbom_review.py
+```
+
+輸出範例：
+
+```
+=== OneCLI v5.6.0 SBOM Review ===
+Building boost target map from CMakeLists.txt … 61 boost targets found
+Running checks …
+  Parsing lnvgy_utl_lxce_onecli_linux_indiv…xlsx … 560 rows
+  Parsing lnvgy_utl_lxce_onecli_windows_indiv…xlsx … 420 rows
+
+  [Linux]
+    Format  : 12 targets,  0 orphans,  0 issue(s)
+    Col A   : 0/560 section headers use version-specific folder
+    Col D   : 0 package(s) with non-constant folder
+    Col D+  : 0 .so rows missing boost annotation (of 150 checked)
+    Col D~  : 148 verified / 0 mismatch / 0 path-missing / 2 no-cmake
+    I/O Ver : 3 ok / 1 wrong / 0 unknown / 0 inconsistent
+    Src Arch: 45 ok / 0 missing
+    Col E   : 0/560 Target rows use version-specific path
+    Col F   : 0 empty USE field(s)
+    Versions: 2 FAIL/MISSING, 1 WARN, 5 OK
+
+Writing report → sbom_review_5.6.0.md
+Done.
+```
+
+---
+
+### Step 3 — 解讀報告
+
+每項 Check 對應的修正方向：
+
+| Check | FAIL / WARN 代表 | 修正方向 |
+|---|---|---|
+| `Format` orphans | 無對應 Header 的孤立行 | 確認應屬哪個 section 或刪除 |
+| `Col A` version folder | Section Header 路徑含版本號 | 統一為固定路徑（不含版本） |
+| `Col D` folder | `see "..."` 前綴路徑不一致 | 對齊至 `Target/<product>/libs/` |
+| `Col D+` boost | `.so`/`.dll` 行缺 boost 標注 | 補上 `; "boost"` + 粉紅填色 |
+| `Col D~` source | Col D 路徑指向不存在的目錄 | 修正至正確 CMakeLists.txt 位置 |
+| `Col E` Target path | Target 路徑含版本號 | 改為不含版本的固定路徑 |
+| `Col F` USE empty | USE 欄位空白 | 填入 `STATIC` / `DYNAMIC` / `TOOL` |
+| `Versions` FAIL | SBOM 版本 ≠ extlibs 實際版本 | 修正 SBOM 版本號，或與開發確認 |
+| `I/O Ver` wrong | I/O 工具版本標記錯誤 | 聯絡 I/O vendor 確認版本後修正 |
+| `Src Arch` missing | `1/` 標記行無對應 source archive | 補上 source tarball |
+| `Dupes` stale | 重複版本且非 I/O-sourced | 移除舊版本行 |
+
+---
+
+### Step 4 — 修正 SBOM 後重新執行
+
+```bash
+python3 src/sbom_checker/sbom_review.py
+# 確認所有 FAIL → 0，WARN 均有文件說明
+```
+
+---
+
+### Step 5 — 搭配其他工具做完整審查
+
+| 工具 | 用途 |
+|---|---|
+| `sbom_review.py` | 自動檢查 10 項，雙平台同時執行，輸出 Markdown 報告 |
+| `sbom-checker check` | CSV 格式驗證 + CMake target 交叉比對 |
+| `sbom-checker review-ux` | UpdateXpress Excel SBOM 審查 |
+| `sbom-checker review-bomc` | BoMC Excel SBOM 審查 |
+| `sbom-checker gen-tpn` | 從 FOSSA JSON + OneCLI TPN 生成 TPN draft |
+| `sbom-checker tpn-delta` | 比對前後版本 TPN/SBOM delta |
+
+---
+
+### 常見修正情境
+
+**情境 A — Boost 標注缺失 (`Col D+`)**
+
+```
+症狀: 30 .so rows missing boost annotation
+原因: Col D 欄位缺少 "; "boost"" 標注
+修正: 使用 openpyxl 腳本批次補上 "; "boost"" + 粉紅填色
+      (參見 reports/plan_v5.6.0.md 的 Issue 3 說明)
+```
+
+**情境 B — 版本漂移 (`Versions FAIL`)**
+
+```
+症狀: curl [FAIL] SBOM declares 8.17.0 but extlibs header shows 8.19.0
+原因: Extlibs 升了 patch version，SBOM 未同步更新
+修正: 向開發確認實際發佈版本，更新 SBOM 對應版本欄位
+```
+
+**情境 C — I/O 工具版本不明 (`I/O Ver unknown`)**
+
+```
+症狀: storcli2 version unknown (0 matched)
+原因: I/O tool 版本未向 vendor 確認，SBOM 僅含 checksum
+修正: 聯絡 vendor 取得版本號 → 填入 Col B → 更新審查基線
+```
+
+---
+
 ## 📦 交付報表
 
 驗證完成後會產生可供法務審核的報表包（tar.gz + zip）：
