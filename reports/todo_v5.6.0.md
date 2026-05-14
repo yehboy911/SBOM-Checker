@@ -1,0 +1,34 @@
+# TODO — SBOM Review Script v5.6.0
+
+- [x] Write `sbom_review.py` at `~/.claude/skills/OSC-compliance-sbom-review/scripts/`
+  - [x] `parse_sbom(path)` → returns header metadata + list of data rows
+  - [x] `check_format(rows)` → Target section count, orphan check, path consistency
+  - [x] `check_versions(rows, platform)` → compare against audit baseline dict
+  - [x] `check_duplicates(rows)` → detect same library with multiple distinct versions
+  - [x] `generate_report(linux_results, windows_results)` → write `sbom_review_5.6.0.md`
+  - [x] `main()` → run all checks, print console summary
+- [x] Add Check 1e — Col D Boost Annotation to `sbom_review.py`
+  - [x] `check_col_d_boost(rows, boost_map, platform)` — CMakeLists.txt scan (boost_filter logic inlined)
+  - [x] Wire into `_run_checks()` and `generate_report()`
+  - [x] Wire into `_print_summary()` console output
+- [x] Run script against both SBOM files
+- [x] Verify output report is correct and complete
+- [x] Save progress to progress.log
+- [x] Add Check 1f — Col A ↔ Col D Source Path Verification to `sbom_review.py`
+  - [x] `_find_source_dir(base, rel_path)` — resolve path, handle `@hash` git submodule suffix
+  - [x] `_cmake_targets_in_dir(src_dir)` — parse add_library/add_executable targets (case-insensitive)
+  - [x] `check_col_a_col_d_source(rows, base)` — cross-verify component name vs CMakeLists.txt target
+  - [x] Wire into `_run_checks()`, `generate_report()`, `_print_summary()`
+  - [x] Run script and verify report output
+- [x] Add Check 1g — I/O Package Version Consistency to `sbom_review.py`
+- [x] Add Check 1h — OSS Source Archive Presence to `sbom_review.py`
+  - [x] Add `_SRC_ARCHIVE_EXT_RE` + `_SRC_ARCHIVE_NAME_RE` regex constants
+  - [x] Add `check_source_archives(rows)` function
+  - [x] Wire into `_run_checks()`, `generate_report()`, `_print_summary()`
+  - [x] Run script and verify report output
+  - [x] Add `_IO_CANONICAL` baseline dict (Linux 8 pkg, Windows 9 pkg)
+  - [x] Add `_IO_VERSION_START_RE` + `_IO_PKG_REF_RE` regex constants
+  - [x] Add `_io_package_family()` helper
+  - [x] Add `check_io_version(rows, platform)` — wrong_version + inconsistent
+  - [x] Wire into `_run_checks()`, `generate_report()`, `_print_summary()`
+  - [x] Run script and verify report output
